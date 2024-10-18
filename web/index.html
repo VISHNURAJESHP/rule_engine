@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rule Engine</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0; /* Remove default margin */
+            padding: 0; /* Remove default padding */
+            font-family: Arial, sans-serif;
+            height: 100vh; /* Full height */
+            overflow: hidden; /* Prevent scrolling */
+        }
+        .container {
+            display: flex;
+            height: 100%; /* Full height */
+            width: 100%; /* Full width */
+            box-sizing: border-box; /* Include padding in width calculation */
+        }
+        .left-column, .right-column {
+            width: 50%; /* Set each column to 50% */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-y: auto; /* Enable vertical scrolling if needed */
+        }
+        .left-column {
+            border-right: 1px solid #ddd; /* Optional: Add a separator */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Column for Rule Creation and Details -->
+        <div class="left-column">
+            <h1>Rule Engine</h1>
+
+            <!-- Input for creating a new rule -->
+            <div>
+                <label for="rule">Enter Rule:</label>
+                <input type="text" id="rule" placeholder="Enter rule (e.g., age > 30 AND salary > 50000)">
+            </div>
+            <div>
+                <button onclick="createRule()">Create Rule</button>
+                <button onclick="showEditRules()">Edit Rule</button>
+            </div>
+
+            <!-- Section to display created rules for editing (hidden by default) -->
+            <div id="editRulesSection" style="display: none;">
+                <h3>Edit Rules</h3>
+                <ul id="rules-list" class="rule-list"></ul>
+            </div>
+
+            <!-- Output section for created rule details -->
+            <div id="output" style="margin-top: 20px;">
+                <h3>Created Rule Details</h3>
+                <div id="ruleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Right Column for Combining and Evaluating Rules -->
+        <div class="right-column">
+            <h3>Combine Two Rules</h3>
+            <div>
+                <label for="rule1">Select Rule 1:</label>
+                <select id="rule1" onchange="updateSelectedRules()">
+                    <option value="">Select Rule 1</option>
+                </select>
+            </div>
+            <div>
+                <label for="rule2">Select Rule 2:</label>
+                <select id="rule2" onchange="updateSelectedRules()">
+                    <option value="">Select Rule 2</option>
+                </select>
+            </div>
+            <div>
+                <button id="combineButton" onclick="combineRules()" disabled>Combine Rules</button>
+            </div>
+
+            <!-- Evaluating a rule -->
+            <h3>Evaluate Rule</h3>
+            <div>
+                <label for="data">Enter User Data:</label>
+                <textarea id="data" rows="5" placeholder='{"age": 35, "department": "Sales", "salary": 60000, "experience": 3}'></textarea>
+            </div>
+            <div>
+                <label for="ruleSelect">Select a Rule to Evaluate:</label>
+                <select id="ruleSelect">
+                    <option value="" disabled selected>Select a rule</option>
+                </select>
+            </div>
+            <div>
+                <button onclick="evaluateRule()">Evaluate Rule</button>
+            </div>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <!-- Modal for modifying rules -->
+    <div id="modifyModal" style="display:none;">
+        <h2>Modify Rule</h2>
+        <label for="ruleExpression">Rule Expression:</label>
+        <input type="text" id="ruleExpression">
+        <button onclick="saveModifiedRule()">Save</button>
+        <button onclick="closeModifyModal()">Cancel</button>
+    </div>
+
+    <!-- Link to the external JavaScript file -->
+    <script src="script.js"></script>
+
+    <script>
+        // Function to create a rule and add to the list
+        function createRule() {
+            const rule = document.getElementById("rule").value;
+            if (!rule) {
+                alert("Please enter a rule.");
+                return;
+            }
+
+            fetch("http://localhost:8000/create_rule/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ rule_string: rule }),
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then((data) => {
+                alert(`Rule created with ID: ${data.rule_id}`);
+                
+                // Display the AST and node structure
+                document.getElementById("ruleOutput").innerHTML = `
+                    <p><strong>Rule ID:</strong> ${data.rule_id}</p>
+                    <p><strong>AST:</strong> ${data.ast}</p>
+                    <pre><strong>Node:</strong> ${JSON.stringify(data.node, null, 2)}</pre>
+                `;
+                
+                // Clear input field after creation
+                document.getElementById("rule").value = ""; 
+            })
+            .catch((error) => {
+                alert(`Error: ${error.message}`);
+            });
+        }
+    </script>
+</body>
+</html>
