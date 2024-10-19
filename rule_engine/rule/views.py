@@ -95,8 +95,20 @@ def create_rule(request):
             'ast': ast_representation,
             'node': serialized_ast
         }, status=201)
+            
 
-    
+# Function to delete a rule
+@csrf_exempt
+def delete_rule(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        rule_id = data.get('rule_id')
+        try:
+            rule = Rule.objects.get(id=rule_id)
+            rule.delete()
+            return JsonResponse({'message': 'Rule deleted successfully!'})
+        except Rule.DoesNotExist:
+            return JsonResponse({'error': 'Rule not found.'}, status=404)
 
 @csrf_exempt
 def combine_rule(request):

@@ -55,10 +55,7 @@ MIDDLEWARE = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # If your frontend is served from a different port
-    # Add other origins if needed
-]
+CORS_ALLOWED_ORIGINS = ["http://localhost:8080"]
 
 ROOT_URLCONF = 'rule_engine.urls'
 
